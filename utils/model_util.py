@@ -4,6 +4,8 @@ from diffusion import gaussian_diffusion as gd
 from diffusion.respace import SpacedDiffusion, space_timesteps
 from utils.parser_util import get_cond_mode
 from data_loaders.humanml_utils import HML_EE_JOINT_NAMES
+from diffusion.flow_matching import FlowMatching
+
 
 def load_model_wo_clip(model, state_dict):
     # assert (state_dict['sequence_pos_encoder.pe'][:model.sequence_pos_encoder.pe.shape[0]] == model.sequence_pos_encoder.pe).all()  # TEST
@@ -17,7 +19,10 @@ def load_model_wo_clip(model, state_dict):
 
 def create_model_and_diffusion(args, data):
     model = MDM(**get_model_args(args, data))
-    diffusion = create_gaussian_diffusion(args)
+    if getattr(args, 'diffusion_type', 'diffusion') == 'flow':
+        diffusion = create_flow_matching(args)
+    else:
+        diffusion = create_gaussian_diffusion(args)
     return model, diffusion
 
 
@@ -113,6 +118,14 @@ def create_gaussian_diffusion(args):
         lambda_rcxyz=args.lambda_rcxyz,
         lambda_fc=args.lambda_fc,
         lambda_target_loc=lambda_target_loc,
+    )
+
+def create_flow_matching(args):
+    return FlowMatching(
+        data_rep=args.__dict__.get('data_rep', 'rot6d'),
+        lambda_rcxyz=args.lambda_rcxyz,
+        lambda_vel=args.lambda_vel,
+        lambda_fc=args.lambda_fc,
     )
 
 def load_saved_model(model, model_path, use_avg: bool=False):  # use_avg_model

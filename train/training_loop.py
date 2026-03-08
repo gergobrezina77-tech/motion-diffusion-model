@@ -102,7 +102,13 @@ class TrainLoop:
             self.device = torch.device(dist_util.dev())
 
         self.schedule_sampler_type = 'uniform'
-        self.schedule_sampler = create_named_schedule_sampler(self.schedule_sampler_type, diffusion)
+
+        # We introduce a flag in the training file for choosing either discrete or continous
+        # timestep sampling for dissufion or flow matching, while keeping it backward compatible
+        if getattr(diffusion, 'uses_discrete_timesteps', True):
+            self.schedule_sampler = create_named_schedule_sampler(self.schedule_sampler_type, diffusion)
+        else:
+            self.schedule_sampler = None        
         self.eval_wrapper, self.eval_data, self.eval_gt_data = None, None, None
         if args.dataset in ['kit', 'humanml'] and args.eval_during_training:
             mm_num_samples = 0  # mm is super slow hence we won't run it during training
@@ -318,7 +324,15 @@ class TrainLoop:
             micro = batch
             micro_cond = cond
             last_batch = (i + self.microbatch) >= batch.shape[0]
-            t, weights = self.schedule_sampler.sample(micro.shape[0], dist_util.dev())
+
+            # Depending on the diffusion type, we pass different arguments into the model
+            if self.schedule_sampler is not None:
+                # for diffusion, we sample discrete timesteps, original here
+                t, weights = self.schedule_sampler.sample(micro.shape[0], dist_util.dev())
+            else:
+                # for flow matching, we don't sample timesteps, it is done internally in the
+                # flow_matching.py file
+                t, weights = None, torch.ones(micro.shape[0], device=dist_util.dev())
 
             compute_losses = functools.partial(
                 self.diffusion.training_losses,
@@ -334,11 +348,9 @@ class TrainLoop:
             else:
                 with self.ddp_model.no_sync():
                     losses = compute_losses()
-
-            if isinstance(self.schedule_sampler, LossAwareSampler):
-                self.schedule_sampler.update_with_local_losses(
-                    t, losses["loss"].detach()
-                )
+            # Ensure that this is not crashing when schedule_sampler is None (e.g. for flow matching)
+            if self.schedule_sampler is not None and isinstance(self.schedule_sampler, LossAwareSampler):
+                self.schedule_sampler.update_with_local_losses(t, losses["loss"].detach())
 
             loss = (losses["loss"] * weights).mean()
             log_loss_dict(
@@ -469,7 +481,8 @@ def get_blob_logdir():
 def log_loss_dict(diffusion, ts, losses):
     for key, values in losses.items():
         logger.logkv_mean(key, values.mean().item())
-        # Log the quantiles (four quartiles, in particular).
-        for sub_t, sub_loss in zip(ts.cpu().numpy(), values.detach().cpu().numpy()):
-            quartile = int(4 * sub_t / diffusion.num_timesteps)
-            logger.logkv_mean(f"{key}_q{quartile}", sub_loss)
+        # Include extra check to ensure no errors if schedule_sampler is None (e.g. for flow matching)
+        if getattr(diffusion, 'uses_discrete_timesteps', True) and ts is not None:
+            for sub_t, sub_loss in zip(ts.cpu().numpy(), values.detach().cpu().numpy()):
+                quartile = int(4 * sub_t / diffusion.num_timesteps)
+                logger.logkv_mean(f"{key}_q{quartile}", sub_loss)

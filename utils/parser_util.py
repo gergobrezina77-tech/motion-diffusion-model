@@ -84,6 +84,12 @@ def add_base_options(parser):
 
 def add_diffusion_options(parser):
     group = parser.add_argument_group('diffusion')
+
+    # New option to specify the training backend, either flow matching or diffusion. 
+    # Note that for flow matching, noise schedule and sigma_small options will be ignored.
+    group.add_argument("--diffusion_type", default='diffusion',
+                       choices=['diffusion', 'flow'], type=str,
+                       help="Training backend: 'diffusion' for GaussianDiffusion, 'flow' for FlowMatching.")
     group.add_argument("--noise_schedule", default='cosine', choices=['linear', 'cosine'], type=str,
                        help="Noise schedule type")
     group.add_argument("--diffusion_steps", default=1000, type=int,
