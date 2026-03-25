@@ -292,12 +292,21 @@ def train_args():
     return apply_rules(parser.parse_args())
 
 
+def add_ode_options(parser):
+    group = parser.add_argument_group('ode')
+    group.add_argument("--ode_method", default='euler', choices=['euler', 'dopri5'], type=str)
+    group.add_argument("--ode_steps", default=100, type=int, help="Number of Euler steps (ignored for dopri5)")
+    group.add_argument("--ode_rtol", default=1e-5, type=float)
+    group.add_argument("--ode_atol", default=1e-5, type=float)
+
 def generate_args():
     parser = ArgumentParser()
     # args specified by the user: (all other will be loaded from the model)
     add_base_options(parser)
     add_sampling_options(parser)
     add_generate_options(parser)
+    #The ODE solver options for the flow matching model. These will be ignored when sampling from a diffusion model.
+    add_ode_options(parser)
     args = parse_and_load_from_model(parser)
     cond_mode = get_cond_mode(args)
 

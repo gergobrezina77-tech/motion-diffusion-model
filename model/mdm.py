@@ -327,7 +327,25 @@ class TimestepEmbedder(nn.Module):
         )
 
     def forward(self, timesteps):
-        return self.time_embed(self.sequence_pos_encoder.pe[timesteps]).permute(1, 0, 2)
+        """Convert timesteps into a latent time embedding.
+
+        Supports both:
+          - integer timestep indices [0, max_pos-1]
+          - continuous values in [0, 1] (used for flow-matching)
+        """
+        pe = self.sequence_pos_encoder.pe
+        if timesteps.dtype.is_floating_point:
+            # Map normalized time in [0, 1] to positional encoding indices.
+            max_pos = pe.shape[0]
+            t = timesteps.clamp(0.0, 1.0) * (max_pos - 1)
+            t0 = t.floor().long()
+            t1 = t.ceil().long()
+            w = (t - t0.float()).unsqueeze(-1).unsqueeze(-1)
+            emb = pe[t0] * (1 - w) + pe[t1] * w
+        else:
+            emb = pe[timesteps]
+
+        return self.time_embed(emb).permute(1, 0, 2)
 
 
 class InputProcess(nn.Module):

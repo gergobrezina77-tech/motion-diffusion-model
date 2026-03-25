@@ -3,7 +3,7 @@ Helpers for distributed training.
 """
 
 import socket
-
+import os
 import torch as th
 import torch.distributed as dist
 
@@ -75,3 +75,7 @@ def _find_free_port():
         return s.getsockname()[1]
     finally:
         s.close()
+
+# Copied from motionfm (https://github.com/dongzhuoyao/motionfm.git)
+def is_rank_zero():
+    return ("LOCAL_RANK" not in os.environ) or (int(os.environ["LOCAL_RANK"]) == 0)

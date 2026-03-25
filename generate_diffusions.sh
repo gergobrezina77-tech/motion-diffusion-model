@@ -3,7 +3,7 @@
 # 10 text-to-motion generations with different prompts
 # Output goes to separate folders under ./generations/
 
-MODEL_PATH="save/humanml_trans_enc_512/model000750000.pt"
+MODEL_PATH="save/diffusion_baseline/model000540000.pt"
 
 PROMPTS=(
     "a person walks forward slowly"
@@ -22,7 +22,7 @@ for i in "${!PROMPTS[@]}"; do
     PROMPT="${PROMPTS[$i]}"
     # convert prompt to a folder-safe slug: lowercase, spaces to underscores, remove special chars
     SLUG=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
-    OUTPUT_DIR="./generations/$(printf '%02d' $i)_${SLUG}"
+    OUTPUT_DIR="./generations/baseline_diffusion_540K/$(printf '%02d' $i)_${SLUG}"
     echo "=========================================="
     echo "Generation $((i+1))/10"
     echo "Prompt: $PROMPT"

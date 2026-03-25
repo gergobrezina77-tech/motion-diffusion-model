@@ -177,18 +177,37 @@ def main(args=None):
     for rep_i in range(args.num_repetitions):
         print(f'### Sampling [repetitions #{rep_i}]')
 
-        sample = sample_fn(
+        from diffusion.flow_matching import FlowMatching
+
+        if isinstance(diffusion, FlowMatching):
+            sample = sample_fn(
+            model,
+            motion_shape,
+            noise=None,
+            model_kwargs=model_kwargs,
+            device=dist_util.dev(),
+            progress=True,
+            ode_kwargs = dict(
+            method=args.ode_method,
+            rtol=args.ode_rtol,
+            atol=args.ode_atol,
+            step_size=1/args.ode_steps,
+            return_x_est=False,
+            )
+            )
+        else:
+            sample = sample_fn(
             model,
             motion_shape,
             clip_denoised=False,
             model_kwargs=model_kwargs,
-            skip_timesteps=0,  # 0 is the default value - i.e. don't skip any step
+            skip_timesteps=0,
             init_image=init_image,
             progress=True,
             dump_steps=None,
             noise=None,
             const_noise=False,
-        )
+    )
 
         # Recover XYZ *positions* from HumanML3D vector representation
         if model.data_rep == 'hml_vec':

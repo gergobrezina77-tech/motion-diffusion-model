@@ -164,7 +164,11 @@ class FlowMatching:
         z = z_orig.detach().clone()
         bs = len(z)
 
-        func = lambda t, x: model(x, t, **model_kwargs)
+        max_pos = model.sequence_pos_encoder.pe.shape[0]
+        def func(t, x):
+            t_idx = (t * (max_pos - 1)).long().clamp(0, max_pos - 1)
+            return model(x, t_idx, **model_kwargs)
+
         target = (
             odeint(
                 func,
@@ -187,7 +191,8 @@ class FlowMatching:
         traj.append(z.detach().clone())
         for i in tqdm(range(0, N, 1), desc="cal_curveness", total=N):
             t = torch.ones(bs, device=z_orig.device) * i / N
-            pred = model(z, t, **model_kwargs)
+            t_idx = (t * (max_pos - 1)).long().clamp(0, max_pos - 1)
+            pred = model(z, t_idx, **model_kwargs)
             pred = pred.detach().clone()
             preds.append((pred - target).pow(2).mean().item())
             z = z.detach().clone() + pred * dt
@@ -241,7 +246,13 @@ class FlowMatching:
             # print("noise is None, use randn instead")
             noise = torch.randn(*shape, device=device)
 
-        func = lambda t, x: model(x, t, **model_kwargs)
+        max_pos = model.sequence_pos_encoder.pe.shape[0]
+        def func(t, x):
+            t_idx = (t * (max_pos - 1)).long().clamp(0, max_pos - 1)
+            # torchdiffeq passes scalar time tensors; expand to match batch size
+            if t_idx.numel() == 1:
+                t_idx = t_idx.reshape(1).expand(x.shape[0])
+            return model(x, t_idx, **model_kwargs)
 
         if ode_kwargs["method"] in ["euler", "dopri5"]:
             assert not ("return_x_est" in ode_kwargs and ode_kwargs["return_x_est"])
@@ -417,8 +428,10 @@ class FlowMatching:
         if noise is None:
             noise = torch.randn_like(x_start)
         assert t is None
+        # Sample a continuous time t in [0, 1] for flow matching.
+        # The model's time embedder will internally map this to the positional encoding via interpolation.
         t = torch.rand(len(x_start), device=x_start.device, dtype=x_start.dtype)
-        t_1d = t[:,]  # [B, 1, 1, 1]
+        t_1d = t  # [B] in [0, 1], continuous conditioning
         t = t[:, None, None, None]  # [B, 1, 1, 1]
         x_t = t * x_start + (1 - (1 - sigma_min) * t) * noise
         target = x_start - (1 - sigma_min) * noise

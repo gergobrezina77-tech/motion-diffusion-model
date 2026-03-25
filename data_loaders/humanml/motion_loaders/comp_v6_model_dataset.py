@@ -6,6 +6,7 @@ from os.path import join as pjoin
 from tqdm import tqdm
 from utils import dist_util
 from utils.sampler_util import AutoRegressiveSampler
+from diffusion.flow_matching import FlowMatching
 
 
 def build_models(opt):
@@ -203,19 +204,35 @@ class CompMDMGeneratedDataset(Dataset):
                 mm_motions = []
                 for t in range(repeat_times):
 
-                    sample = sample_fn(
-                        model,
-                        motion.shape,
-                        clip_denoised=clip_denoised,
-                        model_kwargs=model_kwargs,
-                        skip_timesteps=0,  # 0 is the default value - i.e. don't skip any step
-                        init_image=None,
-                        progress=False,
-                        dump_steps=None,
-                        noise=None,
-                        const_noise=False,
-                        # when experimenting guidance_scale we want to nutrileze the effect of noise on generation
-                    )
+                    if isinstance(diffusion, FlowMatching):
+                        sample = sample_fn(
+                            model,
+                            motion.shape,
+                            noise=None,
+                            model_kwargs=model_kwargs,
+                            device=dist_util.dev(),
+                            progress=False,
+                            ode_kwargs=dict(
+                                method=getattr(args, 'ode_method', 'euler'),
+                                rtol=getattr(args, 'ode_rtol', 1e-5),
+                                atol=getattr(args, 'ode_atol', 1e-5),
+                                step_size=1/getattr(args, 'ode_steps', 100),
+                                return_x_est=False,
+                            ),
+                        )
+                    else:
+                        sample = sample_fn(
+                            model,
+                            motion.shape,
+                            clip_denoised=clip_denoised,
+                            model_kwargs=model_kwargs,
+                            skip_timesteps=0,
+                            init_image=None,
+                            progress=False,
+                            dump_steps=None,
+                            noise=None,
+                            const_noise=False,
+                        )
 
                     if 'prefix' in model_kwargs['y'].keys():
                         model_kwargs['y']['lengths'] = model_kwargs['y']['orig_lengths']
