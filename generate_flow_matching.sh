@@ -3,8 +3,9 @@
 # 10 text-to-motion generations with different prompts
 # Output goes to separate folders under ./generations/
 
-MODEL_PATH="save/motion_flow_v2_bs128/model000540000.pt"
+MODEL_PATH="save/motion_flow_v2_bs128/model000540000.pt" # Update this to your actual model path
 
+# Update Prompts as desired
 PROMPTS=(
     "a person walks forward slowly"
     "a person runs and then stops"
@@ -28,8 +29,9 @@ for i in "${!PROMPTS[@]}"; do
     echo "Prompt: $PROMPT"
     echo "Output: $OUTPUT_DIR"
     echo "=========================================="
-    #        --ode_steps 200 \ for euler
+    #        --ode_steps 10 \ for euler
     #        --ode_method euler \ rk4 \ for dopri5
+    #          dopri5 uses adaptive step count, does not require --ode_steps argument
     python3 -m sample.generate \
         --model_path "$MODEL_PATH" \
         --text_prompt "$PROMPT" \

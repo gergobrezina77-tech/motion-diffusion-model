@@ -5,6 +5,7 @@
 
 MODEL_PATH="save/diffusion_baseline/model000500000.pt"  # Update this to your actual model path
 
+#Update prompts as desired
 PROMPTS=(
     "a person walks forward slowly"
     "a person runs and then stops"
