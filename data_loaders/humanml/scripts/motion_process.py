@@ -499,7 +499,8 @@ if __name__ == "__main__":
     print('Total clips: %d, Frames: %d, Duration: %fm' %
           (len(source_list), frame_num, frame_num / 20 / 60))
 '''
-
+# Delete comment for KIT 
+"""
 if __name__ == "__main__":
     example_id = "03950_gt"
     # Lower legs
@@ -550,7 +551,7 @@ if __name__ == "__main__":
     print('Total clips: %d, Frames: %d, Duration: %fm' %
           (len(source_list), frame_num, frame_num / 12.5 / 60))
 
-
+"""
 def traj_global2vel(traj_positions, traj_rot):
 
     # traj_positions [bs, 2 (x,z), seqlen]
