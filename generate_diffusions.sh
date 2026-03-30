@@ -3,7 +3,7 @@
 # 10 text-to-motion generations with different prompts
 # Output goes to separate folders under ./generations/
 
-MODEL_PATH="save/diffusion_baseline/model000540000.pt"
+MODEL_PATH="save/diffusion_baseline/model000500000.pt"  # Update this to your actual model path
 
 PROMPTS=(
     "a person walks forward slowly"
@@ -22,7 +22,7 @@ for i in "${!PROMPTS[@]}"; do
     PROMPT="${PROMPTS[$i]}"
     # convert prompt to a folder-safe slug: lowercase, spaces to underscores, remove special chars
     SLUG=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
-    OUTPUT_DIR="./generations/baseline_diffusion_540K/$(printf '%02d' $i)_${SLUG}"
+    OUTPUT_DIR="./generations/diffusion/$(printf '%02d' $i)_${SLUG}" # Edit to change generation output path
     echo "=========================================="
     echo "Generation $((i+1))/10"
     echo "Prompt: $PROMPT"
@@ -38,7 +38,7 @@ for i in "${!PROMPTS[@]}"; do
         --output_dir "$OUTPUT_DIR"
 
     echo "Running visualization..."
-    python3 visualize_new.py \
+    python3 visualize/visualize_new.py \
         --npy_path "$OUTPUT_DIR/results.npy" \
         --output_path "$OUTPUT_DIR/visualization.mp4"
 
