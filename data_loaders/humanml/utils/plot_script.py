@@ -181,7 +181,8 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, dataset, figsize=(3
 
         return mplfig_to_npimage(fig)
 
-    ani = VideoClip(update)
-    
+    ani = VideoClip(update, duration=n_frames/fps)
+    ani.fps = fps
+
     plt.close()
     return ani

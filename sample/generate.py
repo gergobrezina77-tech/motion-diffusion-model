@@ -296,7 +296,7 @@ def main(args=None):
                                                          fps=fps, gt_frames=gt_frames)
             rep_files.append(animation_save_path)
 
-    save_multiple_samples(out_path, {'all': all_file_template}, animations, fps, max(list(all_lengths) + [n_frames]))
+    #save_multiple_samples(out_path, {'all': all_file_template}, animations, fps, max(list(all_lengths) + [n_frames]))
 
     abs_path = os.path.abspath(out_path)
     print(f'[Done] Results are at [{abs_path}]')
@@ -318,14 +318,22 @@ def save_multiple_samples(out_path, file_templates,  animations, fps, max_frames
             all_sample_save_path = os.path.join(out_path, all_sample_save_file)
             print(f'saving {os.path.split(out_path)[1]}/{all_sample_save_file}')
 
+       # Get the individual clips and set their fps
+        individual_clips = animations[sample_i:last_sample_i].flatten()
+        for clip in individual_clips:
+            if clip is not None and hasattr(clip, 'fps'):
+                clip.fps = fps
+
         clips = clips_array(animations[sample_i:last_sample_i])
-        clips.duration = max_frames/fps
-        
-        # import time
-        # start = time.time()
+        clips.fps = fps  # Set on composite too
+                
+        if max_frames and fps:
+            clips.duration = max_frames / fps
+        else:
+            clips.duration = None 
+
         clips.write_videofile(all_sample_save_path, fps=fps, threads=4, logger=None)
-        # print(f'duration = {time.time()-start}')
-        
+                
         for clip in clips.clips: 
             # close internal clips. Does nothing but better use in case one day it will do something
             clip.close()

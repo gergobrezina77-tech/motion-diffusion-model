@@ -76,7 +76,7 @@ def draw_frame(t):
     ax.zaxis.pane.set_edgecolor('none')
     plt.tight_layout(pad=0)
 
-writer = imageio.get_writer(args.output_path, fps=20)
+writer = imageio.get_writer(args.output_path, fps=20, macro_block_size=1)
 
 num_frames = motion_centered.shape[-1]
 for t in range(num_frames):

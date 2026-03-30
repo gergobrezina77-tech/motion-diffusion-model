@@ -3,7 +3,7 @@
 # 10 text-to-motion generations with different prompts
 # Output goes to separate folders under ./generations/
 
-MODEL_PATH="path/to/model.pt"  # Update this to your actual model path
+MODEL_PATH="save/motion_flow_v2_bs128/model000540000.pt"
 
 PROMPTS=(
     "a person walks forward slowly"
@@ -22,7 +22,7 @@ for i in "${!PROMPTS[@]}"; do
     PROMPT="${PROMPTS[$i]}"
     # convert prompt to a folder-safe slug: lowercase, spaces to underscores, remove special chars
     SLUG=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
-    OUTPUT_DIR="./generations/motion_flow/$(printf '%02d' $i)_${SLUG}"  # Edit to change generation output path
+    OUTPUT_DIR="./generations/motion_flow_dopri5_540K_fixed3/$(printf '%02d' $i)_${SLUG}"  # Edit to change generation output path
     echo "=========================================="
     echo "Generation $((i+1))/10"
     echo "Prompt: $PROMPT"
