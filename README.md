@@ -41,7 +41,7 @@ cd motion-diffusion-model
 
 **Step 2: Create a virtual environment**
 ```bash
-python -m venv .venv
+python3 -m venv .venv      # On Windows: python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
@@ -49,6 +49,11 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```bash
 pip install -r requirements.txt
 ```
+```bash
+chmod +x prepare/patch_chumpy.sh
+bash prepare/patch_chumpy.sh
+```
+
 
 Key dependencies:
 - `torch` (PyTorch with CUDA)
@@ -310,3 +315,12 @@ This code builds directly on:
 - [Motion Flow Matching (Hu et al.)](https://arxiv.org/abs/2312.05708) - Application to motion domain
 
 Thanks to the HumanML3D and CLIP teams for datasets and pretrained encoders.
+
+
+## Installation issues
+
+1. moviepy dependency - sometimes the installation from the requirements.txt is incomplete here. Just uninstall and reinstall
+```bash
+pip uninstall moviepy
+pip install moviepy==1.0.3
+```

@@ -3,8 +3,7 @@
 echo "Downloading pretrained models from HuggingFace..."
 
 # Create save directories if they don't exist
-mkdir -p save/flow_matching_540k
-mkdir -p save/diffusion_540k
+mkdir -p save
 
 # Check if huggingface_hub is installed
 if ! python -c "import huggingface_hub" &> /dev/null; then
@@ -32,7 +31,7 @@ for remote_file, local_file in files:
         hf_hub_download(
             repo_id=repo_id,
             filename=remote_file,
-            local_dir=".",
+            local_dir="save",
             local_dir_use_symlinks=False
         )
         print(f"✓ {remote_file.split('/')[-1]} downloaded")
@@ -62,7 +61,7 @@ for remote_file, local_file in files:
         hf_hub_download(
             repo_id=repo_id,
             filename=remote_file,
-            local_dir=".",
+            local_dir="save",
             local_dir_use_symlinks=False
         )
         print(f"✓ {remote_file.split('/')[-1]} downloaded")
@@ -77,18 +76,18 @@ echo "========================================="
 echo "Download complete!"
 echo ""
 echo "Models saved in:"
-echo "  • save/flow_matching_540k/"
+echo "  • save/flow_matching/"
 echo "    - model000540000.pt (checkpoint)"
 echo "    - opt000540000.pt (config)"
 echo "    - args.json (arguments)"
 echo ""
-echo "  • save/diffusion_540k/"
+echo "  • save/diffusion/"
 echo "    - model000540000.pt (checkpoint)"
 echo "    - opt000540000.pt (config)"
 echo "    - args.json (arguments)"
 echo ""
 echo "Quick test:"
 echo "  python -m sample.generate \\"
-echo "    --model_path save/flow_matching_540k/model000540000.pt \\"
+echo "    --model_path save/flow_matching/model000540000.pt \\"
 echo "    --text_prompt \"a person walks forward\" \\"
 echo "    --num_samples 3"

@@ -1,11 +1,11 @@
 # ============================================================================
-# PyTorch with CUDA 11.8 support
+# PyTorch with CUDA 12.8 support (required for Blackwell/RTX 5000-series GPUs)
+# For older GPUs (Ampere/Ada), change cu128 to cu124 and drop the >=2.6.0 pin
 # ============================================================================
-# Change to /cu128 for Cuda 12.8 or anything else
---extra-index-url https://download.pytorch.org/whl/cu118 
-torch>=2.0.0
-torchvision>=0.15.0
-torchaudio>=2.0.0
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch>=2.6.0,<2.12.0
+torchvision>=0.21.0,<0.27.0
+torchaudio>=2.6.0,<2.12.0
 
 # ============================================================================
 # Core Dependencies
@@ -18,46 +18,47 @@ torchdiffeq==0.2.5
 einops==0.8.2
 
 # Data processing
-numpy>=1.21.0,<2.0.0
-scipy==1.17.1
-pandas==3.0.1
-h5py==3.16.0
+numpy>=1.26.0,<2.0
+scipy>=1.13.0
+pandas>=2.0.0
+h5py>=3.10.0
 
 # Text processing & encoding
-ftfy==6.3.1
+ftfy>=6.1.0
 regex>=2021.11.10
-spacy==3.8.11
+spacy>=3.5.0
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 
 # CLIP for text encoding
 git+https://github.com/openai/CLIP.git
 
 # Visualization
-matplotlib==3.10.8
-imageio==2.37.2
-imageio-ffmpeg==0.6.0
-moviepy==1.0.3
-opencv-python==4.13.0.92
+matplotlib>=3.5.0
+imageio>=2.9.0
+imageio-ffmpeg>=0.4.0
+moviepy>=1.0.3
+opencv-python-headless>=4.5.0,<4.10
 
 # SMPL body model
-chumpy==0.70
-trimesh==4.11.3
-pyrender==0.1.45
-smplx==0.1.28
+git+https://github.com/hassony2/chumpy
+trimesh>=3.9.0
+pyrender>=0.1.45
+smplx>=0.1.28
 
 # Human body prior
 git+https://github.com/nghorbani/human_body_prior.git
 
 # Training utilities
-tqdm==4.67.3
-tensorboardX==2.6.4
-wandb==0.25.0
+tqdm>=4.62.0
+tensorboardX>=2.5.0
+wandb>=0.12.0
+joblib>=1.0.0
 
 # Configuration
-pyyaml==6.0.3
+pyyaml>=6.0.0
 
 # Utilities
 protobuf>=3.20.0
-gdown==5.2.0
+gdown>=4.0.0
 pillow>=10.0.0
 requests>=2.28.0

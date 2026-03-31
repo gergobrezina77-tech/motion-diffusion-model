@@ -3,7 +3,7 @@
 # 10 text-to-motion generations with different prompts
 # Output goes to separate folders under ./generations/
 
-MODEL_PATH="save/diffusion_baseline/model000500000.pt"  # Update this to your actual model path
+MODEL_PATH="save/diffusion_540k/model000540000.pt"
 
 #Update prompts as desired
 PROMPTS=(
